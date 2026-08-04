@@ -94,17 +94,166 @@ async function fetchTasks() {
 function renderTasks(tasks) {
     tasksContainer.innerHTML = '';
 
-    if (tasks.lenght ==== 0) {
-        tasksContainer.innerHTML = `<p class="empty">No hay tareas pendientes en la base de datos.</p>`;
+    if (tasks.lenght === 0) {
+      tasksContainer.innerHTML = `<p class="empty">No hay tareas pendientes en la base de datos.</p>`;
+      return;
     }
+
+    tasks.forEach(task => {
+      const taskCard = document.createElement('div');
+      taskCard.className = `task-card ${task.completed ? 'completed' : ''}`;
+
+      const setHtmlModoLectura = () => {
+       taskCard.innerHTML = `
+       <div class="task-info">
+          <h3>${task.title}</h3>
+          <p>${task.description || ''}</p>
+          <span class="author">Autor: ${task.author}</span>
+         </div>
+         <div class="task-actions" style="display: flex; gap; 5px;">
+           <button class="btn-edit" style="background-color: #256eb; font-size: 0.85rem; witdth: auto; padding: 5px 10px; color: white; border: none; border-radius: 4px; cursor: pointer,">Editar</button>
+           <button class="btn-delete" style="background-color: #dc2626; font-size: 0.85rem; witdth: auto; padding: 5px 10px; color: white; border: none; border-radius: 4px; cursor: pointer,">Eliminar</button>
+           </div>
+           `;
+
+           taskCard.querySelector('.btn-delete').addEventListener('click', () => deleteTask(task.id, task.id, task.author));
+           taskCard.querySelector('.btn-edit').addEventListener('click', () => cambiarAModoEdicion(task, taskCard));
+          };
+
+          setHtmlModoLectura();
+          tasksContainer.appendChild(taskCard);
+    });
 }
 
- 
+ 5.1  // INTERFAZ DINAMICA: MODO EDICION INLINE 
+function cambiarAModoEdicion(task, taskCard) {
+  if (AUTHOR !== task.author) {
+    openCustomModal( 'Acceso restringido', `¡No autorizado! Esta tarea le pertenece a "${task.author}" y tu eres "${AUTHOR}"`,false);
+    return;
+  }
+
+  taskCard.innerHTML = `
+   <div class=task-edit-form" style="display: flex; flex-direction: column; gap: 8px; witdth: 100%;">
+      <input type="text" class= "edit-tittle" value="${task.title}" style="padding: 5px; border: 1px solid #2563eb; border-radius: 4px;">: 1px solid #2563eb; border-radius: 4px; resive: none;">${task.description || ''}</textarea>
+      <textarea class="edit-desc" style="padding: 5px; border: 1px solid #2563eb; border-radius: 4px; resize: none;">${task.description || ''}</textarea>
+      <div style="display: flex; gap: 5px; justifify-content: flex-end;">
+        <button class= "btn-cancel-edit" style= "background-color: #2563eb; font-size: 0.85rem; witdth: auto; padding: 5px 10px; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
+        <button class= "btn-save-edit" style= "background-color: #6b7280; font-size: 0.85rem; witdth: auto; padding: 5px 10px; color: white; border: none; border-radius: 4px; cursor: pointer;">Guardar</button>
+      </div>
+    </div>
+  `;
+
+  const Btncancel = taskCard.querySelector('.btn-cancel-edit');
+  const BtnGuardar = taskCard.querySelector('.btn-save-edit');
+
+  btnCancelar.addEventListener('click', () => fetchTasks());
+
+  btnGuardar.addEventListener('click', () => {
+    const nuevoTitulo = taskCard.querySelector('.edit-title').value.trim();
+    const nuevaDescription = taskCard.querySelector('.edit-desc').value.trim();
+
+    if (!nuevoTitulo) {
+      openCustomModal('Validacion', 'El titulo de la tarea es obligatorio. ', false);
+      return;
+    }
+
+    updateTask(task.id, nuevoTitulo, nuevaDescription, task.is_completed);
+
+  });
+    
+}
+
+// 6. CREAR TAREA (POST)
+taskForm.addEventListener('submit', async (e) => {
+  e. preventDefault();
+
+  const title = taskTitle.value.trim();
+  const description = taskDescription.value.trim();
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'content-Type': 'application/json' },
+      body: JSON.stringify({ title, description, author: AUTHOR })
+    });
+
+    if (responsable.ok) {
+      taskForm.reset();
+      fetchTasks();
+    }
+  } catch (error) {
+    openCustomModal('Error de red', 'Error de red al intentar crear la tarea.', false);
+  }
+});
+
+// 7. ACTUALIZAR TAREA (PUT)
+async function updateTask(id, title, description, is_completed) {
+  try {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'PUT',
+      headers: { 'content-Type': 'application/json' },
+      body: JSON.stringify({ title, description, is_completed })
+
+    });
+
+    const json = await response.json();
+
+    if (response.ok && json.status === 'success') {
+      fetchTasks();
+    } else {
+      openCustomModal('Error de servidor', json.message || 'Error al actualizar en el servidor', false);
+    }
+  } catch (error) {
+    openCustomModal('Error de red', 'Error al comunicar la actualizacion.', false);
+  }
+}
+
+// 8. ELIMINAR TAREA (DELETE)
+async function deleteTask(id, taskAuthor) {
+  if (AUTHOR !== taskAuthor) {
+    openCustomModal('Acceso denegado', `¡No autorizado! Esta tarea es de "${taskAuthor}" y tu eres "${AUTHOR}"`, false);
+    return;
+  }
+
+  openCustomModal(
+    'Confirmar eliminación',
+    '¿Estas seguro de eliminar esta tarea de la base de datos de manera permanente?',
+    true,
+    async () => {
+      try {
+        const response = await fetch(`${API_URL}`,{
+          method: 'DELETE',
+          hearders: { 'content-type': 'application/json' },
+          body: JSON.stringify({ author: AUTHOR })
+        });
+
+        const json = await response.json();
+
+        if (response.ok && json.status === 'success') {
+          fetchTasks();
+        } else {
+          openCustomModal('Error de servidor', json.message || 'fallo de autorizacion en el servidor', false);
+        }
+      } catch (error) {
+        openCustomModal('Error de red', 'Error al intentar eliminar la tarea.', false);
+      } catch (error) {
+        openCustomModal('Error de red', 'Error de red  al eliminar la tarea.', false);
+      }
+    }
+  ); 
+}
+
+// 9. CERRAR SESION (LOGOUT)
+logoutBtn.addEventListener('click', () => {
+  localStorage.removeItem('todo_author_session');
+  window.location.reload(); 
+});
+
+// === INICIALIZACION  AL ABRIR LA PAGINA ===
+checkAuth();
 
 
-
-
-
+  
 
    
 
