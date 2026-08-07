@@ -1,3 +1,4 @@
+
 // 1. CONFIGURACION GLOBAL (Apunta a tu servidor nativo)
 const API_URL = 'http://localhost:3000'; 
 
@@ -236,8 +237,7 @@ async function deleteTask(id, taskAuthor) {
         }
       } catch (error) {
         openCustomModal('Error de red', 'Error al intentar eliminar la tarea.', false);
-      } catch (error) {
-        openCustomModal('Error de red', 'Error de red  al eliminar la tarea.', false);
+      
       }
     }
   ); 
