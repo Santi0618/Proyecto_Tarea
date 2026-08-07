@@ -76,7 +76,7 @@ loginForm.addEventListener('submit', (e) => {
 
 // 4. LEER TAREAS DESDE MYSQL (GET)
 async function fetchTasks() {
-   try {
+  try {
     const response = await fetch(API_URL);
     const json = await response. json();
 
@@ -84,10 +84,10 @@ async function fetchTasks() {
         renderTasks(json.data.tasks);
     }
         
-   } catch (error) {
-     console.error('Error de red:', error);   
-     tasksContainer.innerHTML = `<p class="empty">No hay tareas pendientes en la base de datos.</p>`;   
-   }
+  } catch (error) {
+    console.error('Error de red:', error);   
+    tasksContainer.innerHTML = `<p class="empty">No hay tareas pendientes en la base de datos.</p>`;   
+  }
 }
 
 // 5. PINTAR LAS TARJETAS DINAMICAMENTE
@@ -104,20 +104,20 @@ function renderTasks(tasks) {
       taskCard.className = `task-card ${task.completed ? 'completed' : ''}`;
 
       const setHtmlModoLectura = () => {
-       taskCard.innerHTML = `
-       <div class="task-info">
+      taskCard.innerHTML = `
+      <div class="task-info">
           <h3>${task.title}</h3>
           <p>${task.description || ''}</p>
           <span class="author">Autor: ${task.author}</span>
-         </div>
-         <div class="task-actions" style="display: flex; gap; 5px;">
-           <button class="btn-edit" style="background-color: #256eb; font-size: 0.85rem; witdth: auto; padding: 5px 10px; color: white; border: none; border-radius: 4px; cursor: pointer,">Editar</button>
-           <button class="btn-delete" style="background-color: #dc2626; font-size: 0.85rem; witdth: auto; padding: 5px 10px; color: white; border: none; border-radius: 4px; cursor: pointer,">Eliminar</button>
-           </div>
-           `;
+        </div>
+        <div class="task-actions" style="display: flex; gap; 5px;">
+          <button class="btn-edit" style="background-color: #256eb; font-size: 0.85rem; witdth: auto; padding: 5px 10px; color: white; border: none; border-radius: 4px; cursor: pointer,">Editar</button>
+          <button class="btn-delete" style="background-color: #dc2626; font-size: 0.85rem; witdth: auto; padding: 5px 10px; color: white; border: none; border-radius: 4px; cursor: pointer,">Eliminar</button>
+          </div>
+          `;
 
-           taskCard.querySelector('.btn-delete').addEventListener('click', () => deleteTask(task.id, task.id, task.author));
-           taskCard.querySelector('.btn-edit').addEventListener('click', () => cambiarAModoEdicion(task, taskCard));
+          taskCard.querySelector('.btn-delete').addEventListener('click', () => deleteTask(task.id, task.id, task.author));
+          taskCard.querySelector('.btn-edit').addEventListener('click', () => cambiarAModoEdicion(task, taskCard));
           };
 
           setHtmlModoLectura();
@@ -133,7 +133,7 @@ function cambiarAModoEdicion(task, taskCard) {
   }
 
   taskCard.innerHTML = `
-   <div class=task-edit-form" style="display: flex; flex-direction: column; gap: 8px; witdth: 100%;">
+  <div class=task-edit-form" style="display: flex; flex-direction: column; gap: 8px; witdth: 100%;">
       <input type="text" class= "edit-tittle" value="${task.title}" style="padding: 5px; border: 1px solid #2563eb; border-radius: 4px;">: 1px solid #2563eb; border-radius: 4px; resive: none;">${task.description || ''}</textarea>
       <textarea class="edit-desc" style="padding: 5px; border: 1px solid #2563eb; border-radius: 4px; resize: none;">${task.description || ''}</textarea>
       <div style="display: flex; gap: 5px; justifify-content: flex-end;">
@@ -255,6 +255,6 @@ checkAuth();
 
   
 
-   
+
 
 
